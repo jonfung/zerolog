@@ -78,6 +78,12 @@ func appendFieldList(dst []byte, kvList []interface{}, stack bool) []byte {
 			if stack && ErrorStackMarshaler != nil {
 				dst = enc.AppendKey(dst, ErrorStackFieldName)
 				switch m := ErrorStackMarshaler(val).(type) {
+				case LogObjectMarshaler:
+					e := newEvent(nil, 0)
+					e.buf = e.buf[:0]
+					e.appendObject(m)
+					dst = append(dst, e.buf...)
+					putEvent(e)
 				case nil:
 				case error:
 					if m != nil && !isNilValue(m) {
